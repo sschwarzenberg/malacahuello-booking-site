@@ -1,3 +1,5 @@
+"use client";
+import { useRef } from "react";
 import { formatCLP } from "../constants/formatters";
 import { cartTotal, isCartBookable } from "../lib/booking/availability";
 
@@ -363,6 +365,34 @@ export default function BookingSidebar({
     </>
   );
 
+  const sheetRef = useRef(null);
+  const touchStartY = useRef(null);
+
+  const onHandleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    if (sheetRef.current) sheetRef.current.style.transition = "none";
+  };
+
+  const onHandleTouchMove = (e) => {
+    if (touchStartY.current === null) return;
+    const delta = Math.max(0, e.touches[0].clientY - touchStartY.current);
+    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${delta}px)`;
+  };
+
+  const onHandleTouchEnd = (e) => {
+    if (touchStartY.current === null) return;
+    const delta = Math.max(0, e.changedTouches[0].clientY - touchStartY.current);
+    touchStartY.current = null;
+    const transition = "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)";
+    if (sheetRef.current) sheetRef.current.style.transition = transition;
+    if (delta > 80) {
+      if (sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
+      onClose();
+    } else {
+      if (sheetRef.current) sheetRef.current.style.transform = "translateY(0)";
+    }
+  };
+
   if (bottomSheet) {
     return (
       <>
@@ -381,6 +411,7 @@ export default function BookingSidebar({
         />
         {/* Sheet */}
         <div
+          ref={sheetRef}
           style={{
             position: "fixed",
             bottom: 0,
@@ -398,11 +429,15 @@ export default function BookingSidebar({
         >
           {/* Drag handle */}
           <div
+            onTouchStart={onHandleTouchStart}
+            onTouchMove={onHandleTouchMove}
+            onTouchEnd={onHandleTouchEnd}
             style={{
               display: "flex",
               justifyContent: "center",
               padding: "14px 0 6px",
               flexShrink: 0,
+              touchAction: "none",
             }}
           >
             <div
