@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { formatCLP } from "../constants/formatters";
 import { cartTotal, isCartBookable } from "../lib/booking/availability";
 
@@ -237,21 +237,71 @@ export default function BookingSidebar({
   }
   const sortedDates = [...dateMap.keys()].sort();
 
+  const sheetRef = useRef(null);
+  const scrollRef = useRef(null);
+  const touchStartY = useRef(null);
+  const isDraggingSheet = useRef(false);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet || !bottomSheet) return;
+
+    const TRANSITION = "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)";
+
+    const onTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+      isDraggingSheet.current = false;
+    };
+
+    const onTouchMove = (e) => {
+      if (touchStartY.current === null) return;
+      const delta = e.touches[0].clientY - touchStartY.current;
+      const scrollTop = scrollRef.current?.scrollTop ?? 0;
+
+      if (!isDraggingSheet.current) {
+        if (delta > 0 && scrollTop === 0) {
+          isDraggingSheet.current = true;
+          sheet.style.transition = "none";
+        } else {
+          return;
+        }
+      }
+
+      e.preventDefault();
+      sheet.style.transform = `translateY(${Math.max(0, delta)}px)`;
+    };
+
+    const onTouchEnd = (e) => {
+      if (touchStartY.current === null) return;
+      const delta = Math.max(0, e.changedTouches[0].clientY - touchStartY.current);
+      const wasDragging = isDraggingSheet.current;
+      touchStartY.current = null;
+      isDraggingSheet.current = false;
+      if (!wasDragging) return;
+
+      sheet.style.transition = TRANSITION;
+      if (delta > 80) {
+        sheet.style.transform = "translateY(100%)";
+        onCloseRef.current();
+      } else {
+        sheet.style.transform = "translateY(0)";
+      }
+    };
+
+    sheet.addEventListener("touchstart", onTouchStart, { passive: true });
+    sheet.addEventListener("touchmove", onTouchMove, { passive: false });
+    sheet.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      sheet.removeEventListener("touchstart", onTouchStart);
+      sheet.removeEventListener("touchmove", onTouchMove);
+      sheet.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [bottomSheet]);
+
   const innerContent = (
     <>
-      {/* <h2
-        style={{
-          margin: "0 0 20px",
-          fontSize: 20,
-          fontWeight: 500,
-          fontFamily: "var(--font-jetbrains-mono)",
-          color: "#1e1e1e",
-          flexShrink: 0,
-        }}
-      >
-        {lang === "es" ? "MI ITINERARIO" : "MY ITINERARY"}
-      </h2> */}
-
       {isEmpty ? (
         <div style={{ textAlign: "center", padding: "32px 0", flex: 1 }}>
           <p
@@ -278,7 +328,7 @@ export default function BookingSidebar({
         </div>
       ) : (
         <>
-          <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
+          <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
             {undated.length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <p
@@ -365,34 +415,6 @@ export default function BookingSidebar({
     </>
   );
 
-  const sheetRef = useRef(null);
-  const touchStartY = useRef(null);
-
-  const onHandleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
-    if (sheetRef.current) sheetRef.current.style.transition = "none";
-  };
-
-  const onHandleTouchMove = (e) => {
-    if (touchStartY.current === null) return;
-    const delta = Math.max(0, e.touches[0].clientY - touchStartY.current);
-    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${delta}px)`;
-  };
-
-  const onHandleTouchEnd = (e) => {
-    if (touchStartY.current === null) return;
-    const delta = Math.max(0, e.changedTouches[0].clientY - touchStartY.current);
-    touchStartY.current = null;
-    const transition = "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)";
-    if (sheetRef.current) sheetRef.current.style.transition = transition;
-    if (delta > 80) {
-      if (sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
-      onClose();
-    } else {
-      if (sheetRef.current) sheetRef.current.style.transform = "translateY(0)";
-    }
-  };
-
   if (bottomSheet) {
     return (
       <>
@@ -429,15 +451,11 @@ export default function BookingSidebar({
         >
           {/* Drag handle */}
           <div
-            onTouchStart={onHandleTouchStart}
-            onTouchMove={onHandleTouchMove}
-            onTouchEnd={onHandleTouchEnd}
             style={{
               display: "flex",
               justifyContent: "center",
               padding: "14px 0 6px",
               flexShrink: 0,
-              touchAction: "none",
             }}
           >
             <div
