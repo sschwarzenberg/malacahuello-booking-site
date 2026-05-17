@@ -5,7 +5,7 @@ import { formatCLP } from "../constants/formatters";
 import { getDateAvailability } from "../lib/booking/availability";
 import { MIN_DATE } from "../constants/dates";
 
-function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
+function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, priority = false }) {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(MIN_DATE);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -81,6 +81,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
             src={exp.image}
             alt={exp.name[lang]}
             fill
+            priority={priority}
             style={{ objectFit: "cover" }}
             sizes="(max-width: 768px) 100vw, 33vw"
           />

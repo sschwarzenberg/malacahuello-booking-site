@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatCLP } from "../constants/formatters";
 import { LANG } from "../constants/LANG";
+import { saveBooking } from "../lib/booking/supabase";
 
 // Render a slot value (AM/PM/FULL/null) as a human-readable label.
 function slotLabel(slot, t) {
@@ -16,6 +17,8 @@ export default function CheckoutFlow({ lang, cartItems, onBack, onConfirm }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
   const [payMethod, setPayMethod] = useState("mp");
   const [confirmed, setConfirmed] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [ref] = useState(() => "MCH-" + Math.random().toString(36).slice(2, 8).toUpperCase());
 
   const total = cartItems.reduce((s, c) => s + c.exp.price * (c.pax || 1), 0);
@@ -138,12 +141,30 @@ export default function CheckoutFlow({ lang, cartItems, onBack, onConfirm }) {
           ))}
           <p style={{ margin: 0, fontSize: 12, color: "var(--color-text-tertiary)" }}>{LANG[lang].pay_disclaimer}</p>
 
+          {saveError && (
+            <p style={{ margin: "0 0 4px", fontSize: 13, color: "#c0392b", textAlign: "center" }}>{saveError}</p>
+          )}
           <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-            <button onClick={() => setStep(0)} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 14 }}>
+            <button onClick={() => setStep(0)} disabled={saving} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 14 }}>
               ← {LANG[lang].back}
             </button>
-            <button onClick={() => setConfirmed(true)} style={{ flex: 2, padding: "12px 0", borderRadius: 12, border: "none", background: "#1a1a1a", color: "#fff", fontWeight: 500, fontSize: 15, cursor: "pointer" }}>
-              {formatCLP(total)} — {lang === "es" ? "Pagar" : "Pay"} →
+            <button
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                setSaveError(null);
+                try {
+                  await saveBooking({ ref, form, payMethod, total, cartItems });
+                  setConfirmed(true);
+                } catch {
+                  setSaveError(lang === "es" ? "Error al guardar la reserva. Intenta nuevamente." : "Error saving booking. Please try again.");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              style={{ flex: 2, padding: "12px 0", borderRadius: 12, border: "none", background: saving ? "#555" : "#1a1a1a", color: "#fff", fontWeight: 500, fontSize: 15, cursor: saving ? "not-allowed" : "pointer" }}
+            >
+              {saving ? "..." : `${formatCLP(total)} — ${lang === "es" ? "Pagar" : "Pay"} →`}
             </button>
           </div>
         </div>

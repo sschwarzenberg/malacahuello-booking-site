@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { LANG } from "./constants/LANG";
-import { EXPERIENCES } from "./constants/EXPERIENCES";
 import BookingSidebar from "./components/BookingSidebar";
 import CheckoutFlow from "./components/CheckoutFlow";
 import ExperienceCard from "./components/ExperienceCard";
+import { fetchExperiences } from "./lib/booking/supabase";
 import { checkAvailability, defaultSlotFor, newCartId } from "./lib/booking/availability";
 import type { CartItem, Experience, Slot } from "./lib/booking/types";
 
@@ -12,10 +12,15 @@ export default function App() {
   const [lang, setLang] = useState<"es" | "en">("es");
   const [filter, setFilter] = useState<"all" | "full" | "half">("all");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [view, setView] = useState<"catalog" | "checkout">("catalog");
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const t = LANG[lang];
+
+  useEffect(() => {
+    fetchExperiences().then(setExperiences).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -28,7 +33,7 @@ export default function App() {
     if (!isMobile) setSidebarOpen(false);
   }, [isMobile]);
 
-  const filtered = (EXPERIENCES as Experience[]).filter(
+  const filtered = experiences.filter(
     (e) => filter === "all" || e.type === filter,
   );
 
@@ -237,7 +242,7 @@ export default function App() {
                   gap: 28,
                 }}
               >
-                {filtered.map((exp) => (
+                {filtered.map((exp, i) => (
                   <ExperienceCard
                     key={exp.id}
                     exp={exp}
@@ -246,6 +251,7 @@ export default function App() {
                     onAdd={addToCart}
                     cartItems={cart}
                     isMobile={isMobile}
+                    priority={i === 0}
                   />
                 ))}
               </div>
