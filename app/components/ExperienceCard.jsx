@@ -149,7 +149,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
           >
             {exp.name[lang]}
           </h3>
-          <p
+          {/* <p
             style={{
               margin: "0 0 14px",
               fontSize: 13,
@@ -163,7 +163,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
             }}
           >
             {exp.desc[lang]}
-          </p>
+          </p> */}
           <div style={{ display: "flex", alignItems: "baseline", gap: 5, marginBottom: 18 }}>
             <span style={{ color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "var(--font-inter)" }}>
               {formatCLP(exp.price)}
@@ -172,7 +172,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
               {t.per_person}
             </span>
           </div>
-          <button
+          {/* <button
             onClick={(e) => { e.stopPropagation(); openModal(); }}
             disabled={isUnavailable}
             style={{
@@ -197,7 +197,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
               : inCart
                 ? `✓ ${lang === "es" ? "SELECCIONADO" : "SELECTED"}`
                 : lang === "es" ? "AGREGAR" : "ADD"}
-          </button>
+          </button> */}
         </div>
       </div>
 

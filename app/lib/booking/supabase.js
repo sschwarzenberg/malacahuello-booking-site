@@ -50,35 +50,27 @@ export async function fetchExperiences() {
   }))
 }
 
-export async function saveBooking({ ref, form, payMethod, total, cartItems }) {
-  const bookingId = crypto.randomUUID()
-
-  const { error: bookingError } = await getSupabase()
-    .from('bookings')
-    .insert({
-      id: bookingId,
+export async function saveBooking({ ref, form, payMethod, cartItems }) {
+  const response = await fetch('/api/bookings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       ref,
-      customer_name: form.name,
-      customer_email: form.email,
-      customer_phone: form.phone,
-      notes: form.notes || null,
-      pay_method: payMethod,
-      total_clp: total,
-      status: 'pending',
-    })
+      form,
+      payMethod,
+      cartItems: cartItems.map((c) => ({
+        expId: c.exp.id,
+        date: c.date,
+        slot: c.slot ?? (c.exp.type === 'full' ? 'FULL' : 'AM'),
+        pax: c.pax,
+      })),
+    }),
+  })
 
-  if (bookingError) throw bookingError
+  if (!response.ok) {
+    const { error } = await response.json().catch(() => ({}))
+    throw new Error(error ?? 'Booking failed')
+  }
 
-  const { error: itemsError } = await getSupabase().from('booking_items').insert(
-    cartItems.map((c) => ({
-      booking_id: bookingId,
-      experience_id: c.exp.id,
-      date: c.date,
-      slot: c.slot ?? (c.exp.type === 'full' ? 'FULL' : 'AM'),
-      pax: c.pax,
-      unit_price: c.exp.price,
-    }))
-  )
-
-  if (itemsError) throw itemsError
+  return response.json()
 }
