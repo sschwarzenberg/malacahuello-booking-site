@@ -5,17 +5,23 @@ export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-const IMG_RIVER  = "https://www.figma.com/api/mcp/asset/06df01ee-0e71-4a47-8a54-cf89dc5cb542"
-const IMG_FOREST = "https://www.figma.com/api/mcp/asset/23d0e15c-a62d-4139-9790-d4998a803133"
-const IMG_FALLS  = "https://www.figma.com/api/mcp/asset/50e143c1-6bd2-4ce8-972e-7cbeded6b2c6"
-
 const UI_META = {
-  "termas-tolhuaca": { emoji: "♨️", image: IMG_FALLS,  color: "#8B4513", bgColor: "#FDF0E8" },
-  "lonquimay":       { emoji: "🌋", image: IMG_FOREST, color: "#C0392B", bgColor: "#FDECEC" },
-  "bosque-araucarias":{ emoji: "🌲", image: IMG_RIVER, color: "#27AE60", bgColor: "#E8F8EF" },
-  "kayak-biobio":    { emoji: "🛶", image: IMG_RIVER,  color: "#2980B9", bgColor: "#EAF4FD" },
-  "cabalgata":       { emoji: "🐴", image: IMG_FALLS,  color: "#8E44AD", bgColor: "#F3EAF9" },
-  "condor-birding":  { emoji: "🦅", image: IMG_FOREST, color: "#E67E22", bgColor: "#FEF3E6" },
+  "termas-tolhuaca":  { emoji: "♨️", color: "#8B4513", bgColor: "#FDF0E8" },
+  "lonquimay":        { emoji: "🌋", color: "#C0392B", bgColor: "#FDECEC" },
+  "bosque-araucarias":{ emoji: "🌲", color: "#27AE60", bgColor: "#E8F8EF" },
+  "kayak-biobio":     { emoji: "🛶", color: "#2980B9", bgColor: "#EAF4FD" },
+  "cabalgata":        { emoji: "🐴", color: "#8E44AD", bgColor: "#F3EAF9" },
+  "condor-birding":   { emoji: "🦅", color: "#E67E22", bgColor: "#FEF3E6" },
+}
+
+function experienceImageUrl(imagePath) {
+  if (!imagePath) return null
+  const { data } = supabase.storage
+    .from('experience-images')
+    .getPublicUrl(imagePath, {
+      transform: { width: 800, height: 600, resize: 'cover', format: 'webp', quality: 80 },
+    })
+  return data.publicUrl
 }
 
 export async function fetchExperiences() {
@@ -39,7 +45,8 @@ export async function fetchExperiences() {
     name: { es: row.name_es, en: row.name_en },
     desc: { es: row.desc_es, en: row.desc_en },
     includes: { es: row.includes_es, en: row.includes_en },
-    ...(UI_META[row.slug] ?? { emoji: "🏔️", image: null, color: "#555", bgColor: "#f5f5f5" }),
+    image: experienceImageUrl(row.image_path),
+    ...(UI_META[row.slug] ?? { emoji: "🏔️", color: "#555", bgColor: "#f5f5f5" }),
   }))
 }
 
