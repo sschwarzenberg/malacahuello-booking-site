@@ -365,49 +365,29 @@ export default function BookingSidebar({
           </div>
 
           <div style={{ flexShrink: 0, paddingTop: 16, borderTop: "0.5px solid var(--color-border-tertiary)" }}>
-            <p
-              style={{
-                margin: "0 0 2px",
-                fontSize: 14,
-                fontFamily: "var(--font-jetbrains-mono)",
-                fontWeight: 400,
-                color: "#1c1c1a",
-                textTransform: "uppercase",
-              }}
-            >
-              {t.total}
-            </p>
-            <p
-              style={{
-                margin: "0 0 16px",
-                fontSize: 40,
-                fontWeight: 400,
-                fontFamily: "var(--font-inter)",
-                color: "#1c1c1a",
-                lineHeight: 1.1,
-              }}
-            >
-              {formatCLP(total)}
-            </p>
             <button
               onClick={onCheckout}
               disabled={!canCheckout}
               style={{
                 width: "100%",
-                padding: "14px 0",
+                padding: "14px 20px",
                 borderRadius: 50,
                 border: "none",
                 background: canCheckout ? "#1e1e1e" : "var(--color-background-secondary)",
                 color: canCheckout ? "#fff" : "var(--color-text-tertiary)",
                 fontFamily: "var(--font-jetbrains-mono)",
-                fontWeight: 700,
+                fontWeight: 300,
                 fontSize: 20,
                 textTransform: "uppercase",
                 cursor: canCheckout ? "pointer" : "not-allowed",
                 letterSpacing: 0.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              {lang === "es" ? "PAGAR" : "PAY"}
+              <span>{lang === "es" ? "PAGAR" : "PAY"}</span>
+              <span>{formatCLP(total)}</span>
             </button>
           </div>
         </>

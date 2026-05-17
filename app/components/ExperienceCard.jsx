@@ -3,10 +3,11 @@ import Image from "next/image";
 import { MiniCalendar } from "./MiniCalendar";
 import { formatCLP } from "../constants/formatters";
 import { getDateAvailability } from "../lib/booking/availability";
+import { MIN_DATE } from "../constants/dates";
 
 function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
   const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(MIN_DATE);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [pax, setPax] = useState(Math.max(1, exp.minPax));
 
@@ -33,7 +34,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
 
   const openModal = () => {
     if (isUnavailable) return;
-    setSelectedDate("");
+    setSelectedDate(MIN_DATE);
     setSelectedSlot(null);
     setPax(Math.max(1, exp.minPax));
     setShowModal(true);
@@ -226,23 +227,47 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Title */}
-            <h2
-              style={{
-                margin: "0 0 24px",
-                fontFamily: "var(--font-jetbrains-mono)",
-                fontSize: 24,
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: -0.96,
-                color: "#1e1e1e",
-              }}
-            >
-              {exp.name[lang]}
-            </h2>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: "var(--font-jetbrains-mono)",
+                  fontSize: 24,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: -0.96,
+                  color: "#1e1e1e",
+                }}
+              >
+                {exp.name[lang]}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 4,
+                  lineHeight: 1,
+                  color: "#1e1e1e",
+                  fontSize: 20,
+                  flexShrink: 0,
+                  marginLeft: 12,
+                }}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
 
             {/* Two-column: calendar + details */}
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 24, marginBottom: 20 }}>
-              <MiniCalendar value={selectedDate} onChange={handleDateChange} lang={lang} />
+              <MiniCalendar
+                value={selectedDate}
+                onChange={handleDateChange}
+                lang={lang}
+                highlightedDates={[...new Set(cartItems.map((c) => c.date).filter(Boolean))]}
+              />
 
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {/* Pax stepper */}
@@ -425,7 +450,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false }) {
                     background: canAdd ? "#1e1e1e" : "#e0e0e0",
                     color: canAdd ? "#fff" : "#aaa",
                     fontFamily: "var(--font-jetbrains-mono)",
-                    fontWeight: 700,
+                    fontWeight: 300,
                     fontSize: 20,
                     textTransform: "uppercase",
                     cursor: canAdd ? "pointer" : "not-allowed",

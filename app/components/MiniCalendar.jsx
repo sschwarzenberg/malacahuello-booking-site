@@ -13,7 +13,7 @@ const DAY_LABELS = {
   en: ["S","M","T","W","T","F","S"],
 };
 
-export function MiniCalendar({ value, onChange, lang }) {
+export function MiniCalendar({ value, onChange, lang, highlightedDates = [] }) {
   const [viewYear, setViewYear] = useState(() =>
     parseInt((value || MIN_DATE).slice(0, 4), 10),
   );
@@ -69,12 +69,13 @@ export function MiniCalendar({ value, onChange, lang }) {
           const dateStr = toDateStr(viewYear, viewMonth, d);
           const isDisabled = dateStr < MIN_DATE || dateStr > MAX_DATE;
           const isSelected = dateStr === value;
+          const isHighlighted = !isSelected && highlightedDates.includes(dateStr);
           return (
             <button
               key={i}
               onClick={() => !isDisabled && onChange(dateStr)}
               disabled={isDisabled}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 28, borderRadius: 6, fontSize: 12, background: isSelected ? "#2d6a4f" : "transparent", color: isDisabled ? "var(--color-text-tertiary)" : isSelected ? "#fff" : "var(--color-text-primary)", border: "none", cursor: isDisabled ? "default" : "pointer", fontWeight: isSelected ? 600 : 400, opacity: isDisabled ? 0.35 : 1 }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 28, borderRadius: 6, fontSize: 12, background: isSelected ? "#2d6a4f" : isHighlighted ? "#e5e5e5" : "transparent", color: isDisabled ? "var(--color-text-tertiary)" : isSelected ? "#fff" : "var(--color-text-primary)", border: "none", cursor: isDisabled ? "default" : "pointer", fontWeight: isSelected ? 600 : 400, opacity: isDisabled ? 0.35 : 1 }}
             >
               {d}
             </button>
