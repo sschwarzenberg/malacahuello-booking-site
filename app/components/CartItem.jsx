@@ -73,7 +73,6 @@ function CartItem({ item, cart, lang, t, onRemove, onDateChange, onSlotChange })
         }}
       >
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 22 }}>{item.exp.emoji}</span>
           <div>
             <p
               style={{

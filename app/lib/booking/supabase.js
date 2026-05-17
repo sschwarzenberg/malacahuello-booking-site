@@ -1,22 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+let _client = null
 
-const UI_META = {
-  "termas-tolhuaca":  { emoji: "♨️", color: "#8B4513", bgColor: "#FDF0E8" },
-  "lonquimay":        { emoji: "🌋", color: "#C0392B", bgColor: "#FDECEC" },
-  "bosque-araucarias":{ emoji: "🌲", color: "#27AE60", bgColor: "#E8F8EF" },
-  "kayak-biobio":     { emoji: "🛶", color: "#2980B9", bgColor: "#EAF4FD" },
-  "cabalgata":        { emoji: "🐴", color: "#8E44AD", bgColor: "#F3EAF9" },
-  "condor-birding":   { emoji: "🦅", color: "#E67E22", bgColor: "#FEF3E6" },
+function getSupabase() {
+  if (!_client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !key) throw new Error(
+      'Missing env vars: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your deployment environment.'
+    )
+    _client = createClient(url, key)
+  }
+  return _client
 }
+
 
 function experienceImageUrl(imagePath) {
   if (!imagePath) return null
-  const { data } = supabase.storage
+  const { data } = getSupabase().storage
     .from('experience-images')
     .getPublicUrl(imagePath, {
       transform: { width: 800, height: 600, resize: 'cover', format: 'webp', quality: 80 },
@@ -25,7 +26,7 @@ function experienceImageUrl(imagePath) {
 }
 
 export async function fetchExperiences() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('experiences')
     .select('*')
     .eq('available', true)
@@ -46,14 +47,13 @@ export async function fetchExperiences() {
     desc: { es: row.desc_es, en: row.desc_en },
     includes: { es: row.includes_es, en: row.includes_en },
     image: experienceImageUrl(row.image_path),
-    ...(UI_META[row.slug] ?? { emoji: "🏔️", color: "#555", bgColor: "#f5f5f5" }),
   }))
 }
 
 export async function saveBooking({ ref, form, payMethod, total, cartItems }) {
   const bookingId = crypto.randomUUID()
 
-  const { error: bookingError } = await supabase
+  const { error: bookingError } = await getSupabase()
     .from('bookings')
     .insert({
       id: bookingId,
@@ -69,7 +69,7 @@ export async function saveBooking({ ref, form, payMethod, total, cartItems }) {
 
   if (bookingError) throw bookingError
 
-  const { error: itemsError } = await supabase.from('booking_items').insert(
+  const { error: itemsError } = await getSupabase().from('booking_items').insert(
     cartItems.map((c) => ({
       booking_id: bookingId,
       experience_id: c.exp.id,

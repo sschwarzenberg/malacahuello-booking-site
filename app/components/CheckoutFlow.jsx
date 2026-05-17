@@ -39,7 +39,7 @@ export default function CheckoutFlow({ lang, cartItems, onBack, onConfirm }) {
         <div style={{ textAlign: "left", background: "var(--color-background-secondary)", borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
           {cartItems.map(c => (
             <div key={c.cartId} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "0.5px solid var(--color-border-tertiary)", fontSize: 13 }}>
-              <span>{c.exp.emoji} {c.exp.name[lang]} — {c.date}{c.slot ? ` (${slotLabel(c.slot, LANG[lang])})` : ""}</span>
+              <span>{c.exp.name[lang]} — {c.date}{c.slot ? ` (${slotLabel(c.slot, LANG[lang])})` : ""}</span>
               <span style={{ fontWeight: 500 }}>{formatCLP(c.exp.price * (c.pax || 1))}</span>
             </div>
           ))}
@@ -99,7 +99,7 @@ export default function CheckoutFlow({ lang, cartItems, onBack, onConfirm }) {
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 500 }}>{LANG[lang].booking_summary}</p>
             {cartItems.map(c => (
               <div key={c.cartId} style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
-                <span>{c.exp.emoji} {c.exp.name[lang]} · {c.date}{c.slot ? ` (${slotLabel(c.slot, LANG[lang])})` : ""} · {c.pax || 1} {lang === "es" ? "pax" : "guests"}</span>
+                <span>{c.exp.name[lang]} · {c.date}{c.slot ? ` (${slotLabel(c.slot, LANG[lang])})` : ""} · {c.pax || 1} {lang === "es" ? "pax" : "guests"}</span>
                 <span>{formatCLP(c.exp.price * (c.pax || 1))}</span>
               </div>
             ))}
