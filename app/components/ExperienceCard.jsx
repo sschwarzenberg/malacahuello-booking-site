@@ -25,7 +25,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
   ].join(" · ");
 
   const gradientOverlay = inCart
-    ? "linear-gradient(to bottom, rgba(3,3,3,0) 0%, rgba(12,70,41,0.82) 100%)"
+    ? "rgba(12,70,41,0.55)"
     : "linear-gradient(to bottom, rgba(3,3,3,0) 0%, rgba(0,0,0,0.88) 100%)";
 
   const slotAvail = selectedDate
@@ -108,22 +108,34 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
           {badgeLabel}
         </div>
 
-        {cartCount > 1 && (
-          <div
+        {!isUnavailable && (
+          <button
+            onClick={(e) => { e.stopPropagation(); openModal(); }}
+            aria-label={inCart ? (lang === "es" ? "Seleccionado" : "Selected") : (lang === "es" ? "Agregar" : "Add")}
             style={{
               position: "absolute",
-              top: 16,
-              right: 16,
-              background: "#1ad477",
-              color: "#0c4629",
-              borderRadius: 50,
-              padding: "4px 10px",
-              fontSize: 11,
+              top: 14,
+              right: 14,
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              // border: inCart ? "none" : "1.5px solid rgba(255,255,255,0.55)",
+              background: inCart ? "#1ad477" : "#fff",
+              color: inCart ? "#0c4629" : "#000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: inCart ? 16 : 20,
               fontWeight: 700,
+              cursor: "pointer",
+              backdropFilter: "blur(4px)",
+              lineHeight: 1,
+              padding: 0,
+              transition: "background .15s, color .15s",
             }}
           >
-            ×{cartCount}
-          </div>
+            {inCart ? "✓" : "+"}
+          </button>
         )}
 
         <div
@@ -149,7 +161,7 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
           >
             {exp.name[lang]}
           </h3>
-          {/* <p
+          <p
             style={{
               margin: "0 0 14px",
               fontSize: 13,
@@ -163,8 +175,8 @@ function ExperienceCard({ exp, lang, t, onAdd, cartItems, isMobile = false, prio
             }}
           >
             {exp.desc[lang]}
-          </p> */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 5, marginBottom: 18 }}>
+          </p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
             <span style={{ color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "var(--font-inter)" }}>
               {formatCLP(exp.price)}
             </span>
